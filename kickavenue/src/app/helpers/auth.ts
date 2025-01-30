@@ -1,68 +1,50 @@
 /** @format */
 "use server";
+// import { User } from "next-auth";
+import { jwtDecode } from "jwt-decode";
 import { User } from "next-auth";
-import { cookies } from "next/headers";
-
-const url = process.env.AUTH_API_URL || "";
+// import { cookies } from "next/headers";
+// const url = process.env.AUTH_API_URL || "";
+const api_url = process.env.API_URL || "";
 
 export const login = async (credentials: Partial<Record<string, unknown>>) => {
-  const response = await fetch(
-    url +
-      "/auth/login?email=" +
-      credentials.email +
-      "&password=" +
-      credentials.password,
-    {
-      method: "POST",
-      next: {
-        revalidate: 0,
-      },
-    }
-  );
-
-  const token = await response.json();
-
-  const cookieStore = await cookies();
-  cookieStore.set("auth", token.authToken);
-  return token.authToken;
-};
-
-export const getUser = async (token: string) => {
-  const res = await fetch(url + "/auth/me", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+  //http:localhost:8002/api/auth {email, password}
+  const response = await fetch(api_url + "/api/auth", {
+    method: "POST",
+    body: JSON.stringify(credentials),
+    next: {
+      revalidate: 0,
     },
-    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
   });
 
-  return (await res.json()) as User;
+  const json = await response.json();
+  const user = jwtDecode(json.data.access_token) as User;
+  user.access_token = json.data.access_token;
+
+  return user;
 };
 
-export const register = async ({
-  email,
-  name,
-  password,
-}: {
+export const register = async (newUser: {
   email: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   password: string;
 }) => {
-  const response = await fetch(
-    url +
-      "/auth/login?email=" +
-      email +
-      "&password=" +
-      password +
-      "&name=" +
-      name,
-    {
-      method: "POST",
-      next: {
-        revalidate: 0,
-      },
-    }
-  );
+  const response = await fetch(api_url + "/api/auth/new", {
+    method: "POST",
+    body: JSON.stringify(newUser),
+    next: {
+      revalidate: 0,
+    },
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+  });
 
   await response.json();
   return "New user has been registered";

@@ -2,7 +2,7 @@
 
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { getUser, login } from "./app/helpers/auth";
+import { login } from "./app/helpers/auth";
 import Google from "next-auth/providers/google";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -14,9 +14,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Credentials({
       async authorize(credentials) {
         try {
-          const token = await login(credentials);
-          if (!token) throw new Error("wrong email/password");
-          const user = await getUser(token);
+          const user = await login(credentials);
+          if (!user) throw new Error("wrong email/password");
 
           return user;
         } catch (error) {
@@ -42,9 +41,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.name = user.name;
+        token.first_name = user.first_name;
+        token.last_name = user.last_name;
         token.email = user.email;
-        token.image = user.image;
+        token.img_src = user.img_src;
+        token.role = user.role;
+        token.access_token = user.access_token;
       }
       return token;
     },
@@ -53,8 +55,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token) {
         session.user.id = token.id as string;
         session.user.email = token.email as string;
-        session.user.image = token.image as string;
-        session.user.name = token.name as string;
+        session.user.img_src = token.img_src as string;
+        session.user.first_name = token.first_name as string;
+        session.user.last_name = token.last_name as string;
+        session.user.role = token.role as string;
+        session.user.access_token = token.access_token as string;
       }
 
       return session;

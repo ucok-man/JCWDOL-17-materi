@@ -20,12 +20,12 @@ class AuthService {
       throw new ErrorHandler("wrong password", 401);
 
     delete user.password; //menghapus key dari object
-    const token = sign(user, jwt_secret, {
+    const access_token = sign(user, jwt_secret, {
       expiresIn: "20m",
     });
 
     return {
-      token,
+      access_token,
     };
   }
 

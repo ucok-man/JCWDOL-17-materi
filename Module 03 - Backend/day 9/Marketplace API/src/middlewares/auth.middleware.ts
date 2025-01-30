@@ -25,9 +25,7 @@ export const registerValidation =
   (schema: yup.ObjectSchema<any>) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await schema.validate({
-        ...req.body,
-      });
+      await schema.validate(req.body);
       if (await getUserByEmail(req.body.email))
         throw new ErrorHandler("email already used");
       return next();

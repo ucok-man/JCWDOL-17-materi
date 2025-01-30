@@ -9,7 +9,8 @@ import * as Yup from "yup";
 export default function Page() {
   const formik = useFormik({
     validationSchema: Yup.object({
-      name: Yup.string().min(4).required("Name is required"),
+      first_name: Yup.string().min(4).required("Name is required"),
+      last_name: Yup.string().min(4).required("Name is required"),
       email: Yup.string().email().required("Email is required"),
       password: Yup.string()
         .matches(
@@ -23,7 +24,8 @@ export default function Page() {
     }),
     initialValues: {
       email: "",
-      name: "",
+      first_name: "",
+      last_name: "",
       password: "",
       confirmPassword: "",
     },
@@ -64,12 +66,23 @@ export default function Page() {
           type="text"
           required
           className="w-full p-4 mb-1 border rounded-md"
-          placeholder="Your Name"
-          name="name"
-          value={formik.values.name}
+          placeholder="Your First Name"
+          name="first_name"
+          value={formik.values.first_name}
           onChange={formik.handleChange}
         />
-        <p className="mb-4 text-red-400">{formik.errors.name}</p>
+        <p className="mb-4 text-red-400">{formik.errors.first_name}</p>
+
+        <input
+          type="text"
+          required
+          className="w-full p-4 mb-1 border rounded-md"
+          placeholder="Your Last Name"
+          name="last_name"
+          value={formik.values.last_name}
+          onChange={formik.handleChange}
+        />
+        <p className="mb-4 text-red-400">{formik.errors.last_name}</p>
 
         <input
           type="password"

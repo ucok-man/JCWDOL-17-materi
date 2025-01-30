@@ -43,6 +43,7 @@ export default function Navbar() {
 function NavbarDesktop() {
   const router = useRouter();
   const { data: session } = useSession();
+
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
