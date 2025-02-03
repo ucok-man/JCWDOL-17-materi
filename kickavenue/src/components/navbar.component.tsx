@@ -1,6 +1,6 @@
 /** @format */
 "use client";
-import { SessionProvider, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,12 +11,10 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 export default function Navbar() {
   return (
     <div className="w-full sticky top-0 z-10 ">
-      <SessionProvider>
-        {/* desktop */}
-        <NavbarDesktop />
-        {/* mobile */}
-        <NavbarMobile />
-      </SessionProvider>
+      {/* desktop */}
+      <NavbarDesktop />
+      {/* mobile */}
+      <NavbarMobile />
 
       {/* 2nd Navbar */}
       <div className="flex p-4 overflow-x-auto w-full gap-6 md:justify-center items-center bg-white shadow-lg outline-1">
@@ -86,25 +84,26 @@ function NavbarDesktop() {
       <div className="flex items-center ml-[-6px]">
         {session?.user?.id ? (
           <>
-            <div className="flex w-[26] mx-1">
+            <Link href={"/cart"} className="flex w-[26] mx-1">
               <ShoppingCartIcon
                 width={18}
                 height={18}
                 className="mr-2 hover:text-gray-400 cursor-pointer"
               ></ShoppingCartIcon>
-            </div>
+            </Link>
 
             <button onClick={handleClick} className="flex">
               <Image
                 src={
+                  session.user.img_src ||
                   "https://www.kickavenue.com/static/media/no-profile.a853341c.png"
                 }
                 alt="avatar"
                 width={18}
                 height={18}
-                className="mr-2"
+                className="mr-2 rounded-full aspect-square object-cover"
               />
-              <div>{session.user.email}</div>
+              <div>{session.user.first_name}</div>
             </button>
             <Menu
               id="basic-menu"
@@ -115,7 +114,9 @@ function NavbarDesktop() {
                 "aria-labelledby": "basic-button",
               }}
             >
-              <MenuItem onClick={handleClose}>My Account</MenuItem>
+              <MenuItem onClick={handleClose}>
+                <Link href="/my-profile"> My Account</Link>
+              </MenuItem>
               <MenuItem onClick={() => signOut()}>Logout</MenuItem>
             </Menu>
           </>

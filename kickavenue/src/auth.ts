@@ -1,25 +1,24 @@
 /** @format */
 
-import NextAuth from "next-auth";
+import NextAuth, { User } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { login } from "./app/helpers/auth";
+import { login, refreshToken } from "./helpers/handlers/auth";
 import Google from "next-auth/providers/google";
+import { jwtDecode } from "jwt-decode";
+import { InvalidAuthError } from "./interfaces/auth.error";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
     strategy: "jwt",
-    maxAge: 60 * 60 * 3,
+    maxAge: 60 * 20,
   },
   providers: [
     Credentials({
       async authorize(credentials) {
         try {
-          const user = await login(credentials);
-          if (!user) throw new Error("wrong email/password");
-
-          return user;
-        } catch (error) {
-          throw error;
+          return await login(credentials);
+        } catch (error: unknown) {
+          throw new InvalidAuthError(error);
         }
       },
     }),
@@ -38,27 +37,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return true; // Do different verification for other providers that don't have `email_verified`
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
-        token.id = user.id;
-        token.first_name = user.first_name;
-        token.last_name = user.last_name;
-        token.email = user.email;
-        token.img_src = user.img_src;
-        token.role = user.role;
-        token.access_token = user.access_token;
+        const { access_token, refresh_token } = user;
+        return { access_token, refresh_token };
+      } else if (token?.refresh_token || trigger == "update") {
+        const newToken = await refreshToken(token.refresh_token!);
+
+        return newToken;
       }
       return token;
     },
 
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id as string;
-        session.user.email = token.email as string;
-        session.user.img_src = token.img_src as string;
-        session.user.first_name = token.first_name as string;
-        session.user.last_name = token.last_name as string;
-        session.user.role = token.role as string;
+      if (token.access_token) {
+        const user = jwtDecode(token.access_token!) as User;
+        session.user.id = user.id as string;
+        session.user.email = user.email as string;
+        session.user.img_src = user.img_src as string;
+        session.user.first_name = user.first_name as string;
+        session.user.last_name = user.last_name as string;
+        session.user.role = user.role as string;
         session.user.access_token = token.access_token as string;
       }
 

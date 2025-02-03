@@ -6,6 +6,7 @@ import { auth } from "./auth";
 
 export async function middleware(request: NextRequest) {
   const session = await auth(); // get user session
+
   const { pathname } = request.nextUrl;
   if (
     (pathname.startsWith("/login") || pathname.startsWith("/register")) &&
@@ -20,5 +21,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/login", "/register"],
+  matcher: "/((?!api|_next|static|public|favicon.ico).*)",
 };
