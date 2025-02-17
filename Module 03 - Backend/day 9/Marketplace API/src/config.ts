@@ -27,3 +27,5 @@ export const snap = new MidtransClient.Snap({
   isProduction: false,
   serverKey: process.env.MIDTRANS_SERVER_KEY,
 });
+
+export const midtrans_server_key = process.env.MIDTRANS_SERVER_KEY || "";

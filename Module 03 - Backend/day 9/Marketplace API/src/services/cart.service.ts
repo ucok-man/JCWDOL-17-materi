@@ -2,7 +2,7 @@
 import { Prisma } from "@prisma/client";
 import { Request } from "express";
 import { slugGenerator } from "../helpers/slug.generator";
-import { prisma, snap } from "../config";
+import { midtrans_server_key, prisma, snap } from "../config";
 import { pagination } from "../helpers/pagination";
 import { ErrorHandler } from "../helpers/response.handler";
 
@@ -122,7 +122,6 @@ class CartService {
       };
 
       const { token, redirect_url } = await snap.createTransaction(parameter); // create transaction in midtrans
-      console.log(redirect_url);
 
       await prisma.cart.deleteMany({
         where: {
@@ -132,6 +131,32 @@ class CartService {
 
       return token;
     });
+  }
+
+  async updatePaymentStatus(req: Request) {
+    const res = await fetch(
+      `https://api.sandbox.midtrans.com/v2/${req.params.no_inv}/status`,
+      {
+        headers: {
+          Authorization:
+            "Basic " +
+            Buffer.from(midtrans_server_key + ":").toString("base64"),
+        },
+      }
+    );
+
+    const { transaction_status } = await res.json();
+    if (transaction_status == "settlement")
+      await prisma.transaction.update({
+        data: {
+          status: "PAID",
+        },
+        where: {
+          noInvoice: String(req.params.no_inv),
+          userId: req.user?.id,
+        },
+      });
+    else throw new ErrorHandler("Please finish your transaction payment");
   }
 }
 export default new CartService();

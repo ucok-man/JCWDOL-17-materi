@@ -3,6 +3,8 @@
 import { NextFunction, Request, Response } from "express";
 import { ErrorHandler, responseHandler } from "../helpers/response.handler";
 import cartService from "../services/cart.service";
+import { buffer } from "stream/consumers";
+import { midtrans_server_key, prisma } from "../config";
 
 class CartController {
   async addToCart(req: Request, res: Response, next: NextFunction) {
@@ -45,6 +47,15 @@ class CartController {
         "your transaction has been created, please proceed your payment through midtrans",
         token
       );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updatePayment(req: Request, res: Response, next: NextFunction) {
+    try {
+      await cartService.updatePaymentStatus(req);
+      responseHandler(res, "your payment status has been updated");
     } catch (error) {
       next(error);
     }

@@ -71,7 +71,7 @@ enum TransactionStatus {
 
 model Transaction {
   id                Int                 @id @default(autoincrement())
-  noInvoice         String
+  noInvoice         String              @unique
   status            TransactionStatus   @default(PENDING)
   userId            Int
   User              User                @relation(fields: [userId], references: [id])

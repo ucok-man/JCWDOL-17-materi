@@ -11,6 +11,7 @@ export const cartRouter = () => {
   router.delete("/:productId", verifyUser, cartController.deleteCart);
   router.post("/", verifyUser, cartController.addToCart);
   router.post("/midtrans", verifyUser, cartController.checkout);
+  router.patch("/midtrans/:no_inv", verifyUser, cartController.updatePayment);
 
   return router;
 };

@@ -39,6 +39,28 @@ export const CartTable = () => {
     [session, fetchCart]
   );
 
+  const checkout = useCallback(async () => {
+    const { data } = await api(
+      "/carts/midtrans",
+      "POST",
+      undefined,
+      session?.user.access_token
+    );
+
+    window.snap.pay(data, {
+      onSuccess: async function (res: { order_id: string }) {
+        await api(
+          "/carts/midtrans/" + res.order_id,
+          "PATCH",
+          undefined,
+          session?.user.access_token
+        );
+      },
+      onClose: function () {},
+    });
+    fetchCart();
+  }, [session, fetchCart]);
+
   useEffect(() => {
     if (session?.user.access_token) fetchCart();
   }, [session, fetchCart]);
@@ -105,7 +127,7 @@ export const CartTable = () => {
       </TableContainer>
 
       <div className="flex justify-end mt-3">
-        <Button>
+        <Button onClick={checkout}>
           <span className="font-bold text-xl">checkout</span>
         </Button>
       </div>
